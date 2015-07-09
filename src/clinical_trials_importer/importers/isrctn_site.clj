@@ -1,10 +1,9 @@
-(ns clinical-trials-importer.importers.isrctn
+(ns clinical-trials-importer.importers.isrctn-site
   (:require [clinical-trials-importer.ext :as ext])
   (:require [clojure.data.json :as json])
   (:require [org.httpkit.client :as http])
   (:require [net.cgrand.enlive-html :as html])
-  (:require [crossref.util.doi :as cr-doi])
-  )
+  (:require [crossref.util.doi :as cr-doi]))
 
 (def works-base "http://api.crossref.org/works")
 

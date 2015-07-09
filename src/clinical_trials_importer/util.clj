@@ -1,34 +1,21 @@
-(ns clinical-trials-importer.util)
+(ns clinical-trials-importer.util
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :refer [reader resource input-stream]]
+            [clojure.string :as string]))
 
-; The regexes are scoped so tightly because there is some tricky data out there.
-; This may require some maintenance but should provide the right false-negative balance.
-(def prefixes {:clinical-trial-clinical-trials-gov #"nct[ -]?[-0-9]+"
-               :clinical-trial-isrctn #"isrctn[ -]?[0-9-]+"
-               :clinical-trial-actrn #"actrn[ -]?[0-9]+"
-               :clinical-trial-drks #"drks[ -]?[0-9]+"
-               :clinical-trial-chictr #"chictr[ -]?(?:-[-a-z]+)?[0-9]+"
-               :clinical-trial-rebec #"rbr[ -]?[0-9-a-z]+"
-               :clinical-trial-dutch-trial-register #"ntr[ -]?[-0-9]+"
-               :clinical-trial-clinical-trial-registry-india #"ctri[ -]?[0-9/]+"
-               :clinical-trial-umin-japan #"umin[ -]?[ctr]*[0-9]+"
-               :clinical-trial-pactr #"pactr[ -]?[0-9]+"
-               :clinical-trial-prospero #"crd[ -]?[0-9]+"
-               :clinical-trial-slctr #"slctr[ -]?[0-9/]+"
-               :clinical-trial-jma #"jma[ -]?[a-z]*[0-9]+"
-               :clinical-trial-irct #"irct[ -]?[0-9a-z]+"
-               :clinical-trial-hkctr #"hkctr[ -]?[-0-9]+"
-               :clinical-trial-ppb-kenya #"ppb ?[0-9]+"
-               :clinical-trial-ukcrn #"ukcrn ?[0-9]+"
-               })
+(def namespaces
+  "List of namespaces"
+  (-> "clinical-trial-registries.clj" resource slurp edn/read-string))
 
+(def namespaces-by-type
+  "Map type to lsit of namespaces"
+  (group-by :type namespaces))
 
-(def separator #"[-/# ]?")
-
-; UMIN-CTR => UMIN
-
+(def namespaces-by-id
+  (into {} (map (fn [nspace] [(:id nspace) nspace]) namespaces)))
 
 ; (def regex (re-pattern (str "(?:" (apply str (interpose "|" (keys prefixes))) ")" separator "[0-9-/a-zA-Z]+")))
-(def regex (re-pattern (str "(?:" (apply str (interpose "|" (map second prefixes))) ")")))
+(def regex (re-pattern (str "(?:" (apply str (interpose "|" (map :regular-expression-relaxed namespaces))) ")")))
 
 (defn extract-cts
   "Take a string and try and extract clinical trial IDs and types."
@@ -36,14 +23,28 @@
   (let [input (.toLowerCase input-string)
         tokens (re-seq regex input)
         with-types (map (fn [token]
-                          (map #(when (re-matches (second %) token)
-                                  ; Some regexes can catch a space between the identifier and the number.
-                                  ; The space shouldn't be there.
-                                  [(.replace token " " "") (first %)])
-                               prefixes)) tokens)
+                          (map #(when (re-matches (re-pattern (:regular-expression-relaxed %)) token)
+                                  (let [[cleanup-re cleanup-replacement] (:regular-expression-cleanup %)
+                                        ; Clean up if there's a re.
+                                        cleaned (if cleanup-re
+                                                    (string/replace token (re-pattern cleanup-re) cleanup-replacement)
+                                                    token)]
+                                    ; Now try and pass the cleaned-up token.
+                                    (when (re-matches (re-pattern (:regular-expression-strict %)) cleaned)
+                                      [[cleaned (:id %)]])))
+                               namespaces)) tokens)
         ; Often duplicates.
-        result (set (remove nil? (apply concat with-types)))
-        
-        ]
+        result (set (remove nil? (apply concat with-types)))]
     result))
   
+(doseq [nspace namespaces]
+  (doseq [[input-string expected] (:test nspace)]
+    (let [output (extract-cts input-string)
+          ; Each test case includes only one identifier.
+          expected-output #{[[expected (:id nspace)]]}]
+      
+      (when (not= output expected-output)
+        (prn "ERROR MATCHING")
+        (prn "INPUT" input-string)
+        (prn "EXPECTED" expected-output)
+        (prn "ACTUAL" output)))))
