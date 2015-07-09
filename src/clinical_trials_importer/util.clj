@@ -5,7 +5,7 @@
 
 (def namespaces
   "List of namespaces"
-  (-> "clinical-trial-registries.clj" resource slurp edn/read-string))
+  (-> "clinical-trial-registries.edn" resource slurp edn/read-string))
 
 (def namespaces-by-type
   "Map type to lsit of namespaces"
