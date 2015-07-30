@@ -10,10 +10,11 @@
      :type :clinical-trial-registry
      :name "Uniform Trial Number"
      :short-name "UTN"
-     :regular-expression-relaxed "utn[ -]?\\d+"
-     :regular-expression-strict "utn\\d+"
-     :regular-expression-cleanup ["utn[ -](\\d+)", "utn$1"]
-     :test [["utn1234", "utn1234"], ["utn-1234", "utn1234"], ["utn 1234", "utn1234"]]
+     :regular-expression-relaxed "u[ -]?[\\d-]+"
+     :regular-expression-strict "u[\\d-]+"
+     :regular-expression-cleanup ["u[ -]([\\d-]+)", "u$1"]
+     :test [["u1111-1149-9258", "u1111-1149-9258"], ["u-1111-1149-9258", "u1111-1149-9258"], ["u 1111-1149-9258", "u1111-1149-9258"]
+            ["u111111499258", "u111111499258"], ["u-111111499258", "u111111499258"], ["u 111111499258", "u111111499258"]]
      :create-url "http://apps.who.int/trialsearch/Trial2.aspx?TrialID=%s"
      :url "http://www.who.int/ictrp/unambiguous_identification/en/"
      :note "UTN is not a trial registry"}
@@ -81,9 +82,9 @@
      :type :clinical-trial-registry
      :name "Brazilian Clinical Trials Registry / Registro Brasileiro de Ensaios Clínicos "
      :short-name "ReBec"
-     :regular-expression-relaxed "rbr[ -]?\\w+"
-     :regular-expression-strict "rbr\\w+"
-     :regular-expression-cleanup ["rbr[ -](\\w+)", "rbr$1"]
+     :regular-expression-relaxed "rbr[ -]?\\d+"
+     :regular-expression-strict "rbr\\d+"
+     :regular-expression-cleanup ["rbr[ -](\\d+)", "rbr$1"]
      :test [["rbr1234", "rbr1234"], ["rbr 1234", "rbr1234"], ["rbr-1234", "rbr1234"]]
      :create-url "http://www.ensaiosclinicos.gov.br/rg/%s"
      :url "http://www.ensaiosclinicos.gov.br/"}
@@ -211,15 +212,15 @@
      :create-url "https://cris.nih.go.kr/cris/search/basic_search.jsp?searchword="
      :url "https://cris.nih.go.kr"}
     
-    {:id "clinical-trial:rpec "
+    {:id "clinical-trial:rpcec "
      :type :clinical-trial-registry
      :name "Cuban Public Registry of Clinical Trials"
      :short-name "RPCEC"
      :example "RPCEC00000192"
-     :regular-expression-relaxed "rpec[ -]?\\d+"
-     :regular-expression-strict "rpec\\d+"
-     :regular-expression-cleanup ["rpec[- ]?(\\d+)", "rpec$1"]
-     :test [["rpec1234", "rpec1234"], ["rpec 1234", "rpec1234"], ["rpec-1234", "rpec1234"]]
+     :regular-expression-relaxed "rpcec[ -]?\\d+"
+     :regular-expression-strict "rpcec\\d+"
+     :regular-expression-cleanup ["rpcec[- ]?(\\d+)", "rpcec$1"]
+     :test [["rpcec1234", "rpcec1234"], ["rpcec 1234", "rpcec1234"], ["rpcec-1234", "rpcec1234"]]
      :create-url "http://registroclinico.sld.cu/ensayos/"
      :url "http://registroclinico.sld.cu"}
     
